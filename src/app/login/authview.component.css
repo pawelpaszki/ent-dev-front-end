@@ -1,0 +1,17 @@
+.content {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+em {float:right; color: #E05C65; padding-left: 1em;}
+.invCred {
+  color: #E05C65; text-align: center;
+}
+.error input {background-color: #E3C3C5;}
+.error ::-webkit-input-placeholder {color: #999;}
+.error ::-moz-placeholder {color: #999;}
+.error :-moz-placeholder {color: #999;}
+.error :ms-input-placeholder {color: #999;}

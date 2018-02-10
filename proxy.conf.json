@@ -1,0 +1,10 @@
+{
+  "/posts": {
+    "target": "https://scraper601.herokuapp.com/scrape/all",
+    "secure": true,
+    "pathRewrite": {
+      "^/posts": ""
+    },
+    "changeOrigin": true
+  }
+}
