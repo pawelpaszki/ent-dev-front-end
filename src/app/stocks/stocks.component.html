@@ -171,7 +171,7 @@
   <hr style="border: 0.1em solid black">
 </div>
 
-<div class="row" *ngIf="stocksHeld && stocksHeld.length > 0 && holdingsVisible">
+<div class="row" *ngIf="stocksHeld && stocksHeld.length > 0 && holdingsVisible" style="margin-right: 1em;">
   <form [formGroup]="sellForm" (ngSubmit)="sellShares(sellForm.value)" autocomplete="off">
     <div class="col-md-9">
       <div class="btn-group" *ngFor="let stock of stocksHeld" style="float:right;">
@@ -189,6 +189,79 @@
       <button class="btn btn-success btn-block" type="submit">Sell</button>
     </div>
   </form>
+</div>
+<div *ngIf="holdingsVisible && stocksHeld && stocksHeld.length > 0">
+  <hr style="border: 0.1em solid black">
+  <div class="row">
+    <div class="col-md-2" style="margin-left: 1em;">
+      <h4 (click)="toggleForecast()">
+        Selling Forecasts<span [ngClass]="forecastVisible ? 'glyphicon glyphicon-minus' : 'glyphicon glyphicon-plus'"></span>
+      </h4>
+    </div>
+  </div>
+  <div class="row" style="margin-left: 1em; margin-top: 1em;" *ngIf="forecastVisible">
+    <div class="row">
+      <div class="col-md-4">
+        <h5 style="display: inline; margin-left: 2em;">Enter desired income (same shares sale) </h5>
+      </div>
+      <div class="col-md-2">
+        <input placeholder="Enter desired income" type="number" id="desiredIncome">
+      </div>
+      <div class="col-md-6">
+        <button class="btn btn-success btn-sm" (click)="showDesiredIncome()">show results</button>
+      </div>
+    </div>
+    <div class="row" *ngIf="desiredIncomeVisible">
+      <div class="col-md-1">
+        <span class="glyphicon glyphicon-remove" (click)="hideDesiredIncome()"></span>
+      </div>
+      <div class="col-md-5">
+        desired income
+      </div>
+    </div>
+  </div>
+  <div class="row" style="margin-left: 1em; margin-top: 1em;" *ngIf="forecastVisible">
+    <div class="row">
+      <div class="col-md-4">
+        <h5 style="display: inline; margin-left: 2em;">Enter number of shares to see max profit </h5>
+      </div>
+      <div class="col-md-2">
+        <input placeholder="Enter share's quantity" type="number" id="maxProfit">
+      </div>
+      <div class="col-md-6">
+        <button class="btn btn-success btn-sm" (click)="showMaxProfit()">show results</button>
+      </div>
+    </div>
+    <div class="row" *ngIf="maxProfitVisible">
+      <div class="col-md-1">
+        <span class="glyphicon glyphicon-remove" (click)="hideMaxProfit()"></span>
+      </div>
+      <div class="col-md-5">
+        max profit
+      </div>
+    </div>
+  </div>
+  <div class="row" style="margin-left: 1em; margin-top: 1em;" *ngIf="forecastVisible">
+    <div class="row">
+      <div class="col-md-4">
+        <h5 style="display: inline; margin-left: 2em;">Show which shares to sell with profit under &euro;1270 </h5>
+      </div>
+      <div class="col-md-2">
+      </div>
+      <div class="col-md-6">
+        <button class="btn btn-success btn-sm" (click)="showNonTaxable()">show results</button>
+      </div>
+    </div>
+    <div class="row" *ngIf="nonTaxableVisible">
+      <div class="col-md-1">
+        <span class="glyphicon glyphicon-remove" (click)="hideNonTaxable()"></span>
+      </div>
+      <div class="col-md-5">
+        non taxable
+      </div>
+    </div>
+  </div>
+  <hr style="border: 0.1em solid black">
 </div>
 
 <div class="row">

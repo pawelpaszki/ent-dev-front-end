@@ -31,6 +31,10 @@ export class StocksComponent implements OnInit {
   holdingsVisible: boolean = true;
   soldVisible: boolean = true;
   toBuyVisible: boolean = true;
+  forecastVisible: boolean = true;
+  desiredIncomeVisible: boolean = false;
+  maxProfitVisible: boolean = false;
+  nonTaxableVisible: boolean = false;
   cash: number = 100;
   mode: string = 'test mode';
   email: string;
@@ -96,6 +100,60 @@ export class StocksComponent implements OnInit {
         this.stocksSold = resp.user.stocksSold;
       }
     });
+  }
+
+  // TODO
+  showDesiredIncome() {
+    const desiredIncome = parseInt((<HTMLInputElement>document.getElementById('desiredIncome')).value);
+    let results = [];
+    for(let stock of this.stocksHeld) {
+      if(this.getTotalGainLoss(stock.symbol) >= desiredIncome) {
+        let cumulativeIncome = 0;
+        let cumulativeProfit = 0;
+        let cumulativeQuantity = 0;
+        for(let share of stock.shares) {
+          console.log(this.getDetailGainLoss(stock.symbol, share.quantity, share.purchasePrice));
+          // if(cumulativeIncome + this.getDetailGainLoss(stock.symbol, share.quantity, share.purchasePrice) >= desiredIncome) {
+          //   const shareQuantity = Math.ceil((desiredIncome - cumulativeIncome) / this.getDetailGainLoss(stock.symbol, share.quantity, share.purchasePrice) * share.quantity);
+          //   //console.log(shareQuantity);
+          //   cumulativeQuantity += shareQuantity;
+          //   cumulativeIncome += this.getDetailGainLoss(stock.symbol, shareQuantity, share.purchasePrice);
+          //   results.push({stock: stock.symbol, quantity: cumulativeQuantity});
+          //   break;
+          // } else {
+          //   cumulativeIncome += this.getDetailGainLoss(stock.symbol, share.quantity, share.purchasePrice);
+          //   cumulativeQuantity += share.quantity;
+          // }
+        }
+      }
+    }
+    (<HTMLInputElement>document.getElementById('desiredIncome')).value = '';
+    this.desiredIncomeVisible = true;
+  }
+
+  // TODO
+  showMaxProfit() {
+    const quantity = parseInt((<HTMLInputElement>document.getElementById('maxProfit')).value);
+    console.log(quantity);
+    (<HTMLInputElement>document.getElementById('maxProfit')).value = '';
+    this.maxProfitVisible = true;
+  }
+
+  //TODO
+  showNonTaxable() {
+    this.nonTaxableVisible = true;
+  }
+
+  hideDesiredIncome() {
+    this.desiredIncomeVisible = false;
+  }
+
+  hideMaxProfit() {
+    this.maxProfitVisible = false;
+  }
+
+  hideNonTaxable() {
+    this.nonTaxableVisible = false;
   }
 
   invalidQuantity() {
@@ -225,6 +283,10 @@ export class StocksComponent implements OnInit {
 
   toggleToBuy() {
     this.toBuyVisible = !this.toBuyVisible;
+  }
+
+  toggleForecast() {
+    this.forecastVisible = !this.forecastVisible;
   }
 
   getDefaultPrice(symbol: string) {
