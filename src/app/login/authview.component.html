@@ -42,7 +42,7 @@
             </div>
           </div>
           <br style="display:block; margin-top:2px; line-height:4px;">
-          <p class="invCred" *ngIf="authService.invalidCredentialsProvided">Invalid credentials provided!</p>
+          <p class="invCred" *ngIf="invalidCredentials">Invalid credentials provided!</p>
           <div [hidden]="authAction === 'signup'">
             <button type="submit" class="btn btn-block btn-lg btn-success" >Login</button>
           </div>

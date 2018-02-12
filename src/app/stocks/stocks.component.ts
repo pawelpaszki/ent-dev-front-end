@@ -7,16 +7,20 @@ import {IDefaultPriceModel} from './default.price.model';
 //import {PriceScraperService} from '../common/pricescraper.service';
 import {TabletopComponent} from './tabletop.component';
 import {StocksService} from '../services/stocks.service';
-import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {IShareModel} from './share.model';
 import {IStockModel} from './stock.model';
+import {IPaginationModel} from './pagination.model';
 
 @Component({
   selector: 'app-stocks',
   templateUrl: './stocks.component.html',
   styleUrls: ['./stocks.component.css']
 })
-export class StocksComponent {
+
+
+
+export class StocksComponent implements OnInit {
 
   stocksHeld? = [];
   stocksSold? = [];
@@ -26,6 +30,7 @@ export class StocksComponent {
   currencyMultiplier = 1;
   holdingsVisible: boolean = true;
   soldVisible: boolean = true;
+  toBuyVisible: boolean = true;
   cash: number = 100;
   mode: string = 'test mode';
   email: string;
@@ -34,14 +39,11 @@ export class StocksComponent {
   stockForSaleSymbol: string;
   sellForm: FormGroup;
   quantity: FormControl;
+  fabVisible: boolean = false;
+  paginationElements: IPaginationModel[] = [];
+  pageItems: [number, number];
 
-  defaultPrices: IDefaultPriceModel[] = [
-    new IDefaultPriceModel('AIBG.I', 5, 'ise', 'AIB GROUP PLC'),
-    new IDefaultPriceModel('BIRG.I', 4, 'ise', 'BK IRE GRP PLC'),
-    new IDefaultPriceModel('CRH.I', 30, 'ise', 'CRH PLC'),
-    new IDefaultPriceModel('TSCO', 4.5, 'ftse', 'Tesco'),
-    new IDefaultPriceModel('ripple-xrp', 2, 'coinranking', 'Ripple'),
-  ];
+  defaultPrices = [];
 
   constructor(public authService: AuthService, private router: Router, public stocksService: StocksService) {
     if(this.authService.currentUser && this.authService.currentUser !== null && this.authService.currentUser.holdings && this.authService.currentUser.holdings !== null) {
@@ -54,7 +56,35 @@ export class StocksComponent {
       this.email = this.authService.currentUser.email;
     }
     this.getPricesFromServer();
+    this.getDefaultPrices();
   }
+
+  getDefaultPrices() {
+    this.stocksService.getDefaultPrices().subscribe((resp) => {
+      console.log(resp);
+      this.defaultPrices = (resp as any).defaults;
+      console.log(this.defaultPrices);
+    });
+  }
+
+  topFunction() {
+    document.body.scrollTop = 0; // For Safari
+    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    this.scroll();
+  }
+
+  ngOnInit() {
+    window.addEventListener('scroll', this.scroll, true); //third parameter
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('scroll', this.scroll, true);
+  }
+
+  scroll = () => {
+    this.fabVisible = document.body.scrollTop > 100 || document.documentElement.scrollTop > 100;
+
+  };
 
   resetStock() {
     this.stocksService.resetUserStock().subscribe((resp) => {
@@ -78,8 +108,11 @@ export class StocksComponent {
     this.quantity.setValidators([Validators.min(1), Validators.max(this.getTotalQuantity(this.stockForSaleSymbol))]);
   }
 
-  sellShares(formValue) {
+  setPageItems(start: number, end: number) {
+    this.pageItems = [start,end];
+  }
 
+  sellShares(formValue) {
     if(!this.invalidQuantity()) {
       this.stocksService.sellStock(formValue.quantity, this.getSellingCosts(this.stockForSaleSymbol, formValue.quantity), this.stockForSaleSymbol, this.getDefaultPrice(this.stockForSaleSymbol),this.getTotalQuantity(this.stockForSaleSymbol)).subscribe((resp) => {
         console.log(resp);
@@ -90,85 +123,9 @@ export class StocksComponent {
           this.stocksSold = resp.user.stocksSold;
         }
       });
-      // let removeStock: boolean = false;
-      // for(let stock of this.stocksHeld) {
-      //   if(stock.symbol === this.stockForSaleSymbol) {
-      //     let quantityToSell: number = formValue.quantity;
-      //     const exchange = stock.exchange;
-      //     const displayName = stock.displayName;
-      //     let sharesBeingSold: IShareModel[] = [];
-      //     let sharesAfterSale: IShareModel[] = [];
-      //     let saleDate = new Date();
-      //     let quantitySold = 0;
-      //     let totalSellingCosts = this.getSellingCosts(this.stockForSaleSymbol, quantityToSell);
-      //     let quantity = 0;
-      //     let sellingCosts: number;
-      //     for(let j = 0; j < stock.shares.length; j++) {
-      //       if(quantityToSell - quantitySold > 0) {
-      //         if(quantityToSell - quantitySold >= stock.shares[j].quantity) {
-      //           quantity = stock.shares[j].quantity;
-      //           sellingCosts = Math.round(totalSellingCosts * stock.shares[j].quantity / quantityToSell * 100) / 100;
-      //           sharesBeingSold.push(new IShareModel(stock.shares[j].dateIn,
-      //             saleDate, stock.shares[j].purchasePrice,
-      //             stock.shares[j].quantity, sellingCosts, this.getDefaultPrice(stock.symbol)));
-      //         } else {
-      //           quantity = quantityToSell - quantitySold;
-      //           sellingCosts = Math.round(totalSellingCosts * quantity / quantityToSell * 100) / 100;
-      //           sharesBeingSold.push(new IShareModel(stock.shares[j].dateIn,
-      //             saleDate, stock.shares[j].purchasePrice,
-      //             quantity, sellingCosts, this.getDefaultPrice(stock.symbol)));
-      //           sharesAfterSale.push(new IShareModel(stock.shares[j].dateIn,
-      //             null, stock.shares[j].purchasePrice,
-      //             stock.shares[j].quantity - quantity, 0, this.getDefaultPrice(stock.symbol)));
-      //
-      //         }
-      //         quantitySold += quantity;
-      //       } else {
-      //         sharesAfterSale.push(new IShareModel(stock.shares[j].dateIn,
-      //           null, stock.shares[j].purchasePrice,
-      //           stock.shares[j].quantity, 0, this.getDefaultPrice(stock.symbol)));
-      //       }
-      //     }
-      //     if(quantityToSell === this.getTotalQuantity(stock.symbol)) {
-      //       removeStock = true;
-      //     } else {
-      //       stock.shares = sharesAfterSale;
-      //     }
-      //
-      //     this.updateSoldStock(sharesBeingSold, stock.symbol, exchange, displayName, removeStock);
-      //   }
-      // }
     }
   }
 
-  updateSoldStock(shares: IShareModel[], symbol: string, exchange: string, displayName: string, removeStock: boolean) {
-    let stockPresent: boolean = false;
-    for(let i = 0; i < this.stocksSold.length; i++) {
-      if(this.stocksSold[i].symbol === symbol) {
-        stockPresent = true;
-        const newArray = this.stocksSold[i].shares.concat(shares);
-        this.stocksSold[i].shares = newArray;
-        break;
-      }
-    }
-    if(!stockPresent) {
-      let stock: IStockModel = new IStockModel(symbol, exchange, displayName, shares);
-      this.stocksSold.push(stock);
-    }
-    if(removeStock) {
-      let removeIndex = 0;
-      for(let i = 0; i < this.stocksHeld.length; i++) {
-        if(this.stocksHeld[i].symbol === symbol) {
-          console.log(i);
-          removeIndex = i;
-          break;
-        }
-      }
-      this.stocksHeld.splice(removeIndex,1);
-    }
-    this.quantity.setValue('');
-    this.stockForSaleSymbol = '';
-  }
 
   getPricesFromServer() {
     this.stocksService.getSharePrices()
@@ -178,17 +135,84 @@ export class StocksComponent {
       });
   }
 
+  hasDefaultPrice(symbol: string) {
+    for(let defaultPrice of this.defaultPrices) {
+      if(defaultPrice.symbol == symbol) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   getFormattedPrices() {
     this.livePricesFormatted = [];
+    this.paginationElements = [];
     for (let j = 0; j < this.livePricesRaw.ise.data.length; j++) {
-      this.livePricesFormatted.push(new IDefaultPriceModel(this.livePricesRaw.ise.data[j].symbol, this.livePricesRaw.ise.data[j].price, this.livePricesRaw.ise.exchange, this.livePricesRaw.ise.data[j].company));
+      this.livePricesFormatted.push(new IDefaultPriceModel(this.livePricesRaw.ise.data[j].symbol, this.livePricesRaw.ise.data[j].price.toString().replace(',',''), this.livePricesRaw.ise.exchange, this.livePricesRaw.ise.data[j].company));
     }
     for (let j = 0; j < this.livePricesRaw.ftse350.data.length; j++) {
-      this.livePricesFormatted.push(new IDefaultPriceModel(this.livePricesRaw.ftse350.data[j].symbol, this.livePricesRaw.ftse350.data[j].price, this.livePricesRaw.ftse350.exchange, this.livePricesRaw.ftse350.data[j].company));
+      this.livePricesFormatted.push(new IDefaultPriceModel(this.livePricesRaw.ftse350.data[j].symbol, this.livePricesRaw.ftse350.data[j].price.toString().replace(',',''), this.livePricesRaw.ftse350.exchange, this.livePricesRaw.ftse350.data[j].company));
     }
     for (let j = 0; j < this.livePricesRaw.coinranking.data.length; j++) {
-      this.livePricesFormatted.push(new IDefaultPriceModel(this.livePricesRaw.coinranking.data[j].symbol, this.livePricesRaw.coinranking.data[j].price, this.livePricesRaw.coinranking.exchange, this.livePricesRaw.coinranking.data[j].company));
+      this.livePricesFormatted.push(new IDefaultPriceModel(this.livePricesRaw.coinranking.data[j].symbol, this.livePricesRaw.coinranking.data[j].price.toString().replace(',',''), this.livePricesRaw.coinranking.exchange, this.livePricesRaw.coinranking.data[j].company));
     }
+    for(let i = 0; i < this.livePricesFormatted.length; i += 30) {
+      if(i + 30 >= this.livePricesFormatted.length) {
+        this.paginationElements.push(new IPaginationModel(i + 1, this.livePricesFormatted.length));
+      } else {
+        this.paginationElements.push(new IPaginationModel(i + 1, i + 30));
+      }
+    }
+    this.pageItems = [this.paginationElements[0].startIndex, this.paginationElements[0].endIndex];
+    console.log(this.pageItems);
+    console.log(this.paginationElements);
+    console.log(this.livePricesFormatted.length);
+  }
+
+  setQuantityToBuy(symbol) {
+    for(let stock of this.livePricesFormatted) {
+      if(stock.symbol === symbol) {
+        const quantity = parseInt((<HTMLInputElement>document.getElementById(symbol)).value);
+        if(quantity < 0) {
+          stock.quantity = 0;
+          (<HTMLInputElement>document.getElementById(symbol)).value = '0';
+        } else if (Number.isNaN(quantity)) {
+          stock.quantity = 0;
+          (<HTMLInputElement>document.getElementById(symbol)).value = '';
+        } else {
+          stock.quantity = quantity;
+        }
+      }
+    }
+  }
+
+  buyShares(symbol: string) {
+    if(parseInt((<HTMLInputElement>document.getElementById(symbol)).value) > 0) {
+      for(let stock of this.livePricesFormatted) {
+        if(stock.symbol === symbol) {
+          let purchasePrice: number = 0;
+          if(this.hasDefaultPrice(stock.symbol)) {
+            purchasePrice = this.getDefaultPrice(stock.symbol)
+          } else {
+            this.defaultPrices.push(new IDefaultPriceModel(symbol, stock.price, stock.exchange, stock.displayName));
+            this.stocksService.pushNewDefault(symbol, stock.price, stock.exchange, stock.displayName).subscribe();
+            purchasePrice = stock.price;
+          }
+          this.stocksService.buyStock(stock.symbol, purchasePrice, stock.displayName, stock.exchange, Number.parseInt((<HTMLInputElement>document.getElementById(symbol)).value)).subscribe((resp) => {
+            (<HTMLInputElement>document.getElementById(symbol)).value = '';
+            this.setQuantityToBuy(symbol);
+            if(resp.user.holdings && resp.user.holdings !== null) {
+              this.stocksHeld = resp.user.holdings;
+            }
+            if(resp.user.stocksSold && resp.user.stocksSold !== null) {
+              this.stocksSold = resp.user.stocksSold;
+            }
+          });
+          break;
+        }
+      }
+    }
+    console.log(symbol + ' ' + (<HTMLInputElement>document.getElementById(symbol)).value);
   }
 
   toggleHoldins() {
@@ -199,17 +223,23 @@ export class StocksComponent {
     this.soldVisible = !this.soldVisible;
   }
 
+  toggleToBuy() {
+    this.toBuyVisible = !this.toBuyVisible;
+  }
+
   getDefaultPrice(symbol: string) {
-    if(this.caseScenario === 'Live') {
-      for (let i = 0; i < this.livePricesFormatted.length; i++) {
-        if (this.livePricesFormatted[i].symbol === symbol) {
-          return this.livePricesFormatted[i].price * this.caseMultiplier;
+    if(this.defaultPrices) {
+      if(this.caseScenario === 'Live') {
+        for (let i = 0; i < this.livePricesFormatted.length; i++) {
+          if (this.livePricesFormatted[i].symbol === symbol) {
+            return this.livePricesFormatted[i].price * this.caseMultiplier;
+          }
         }
-      }
-    } else {
-      for (let i = 0; i < this.defaultPrices.length; i++) {
-        if (this.defaultPrices[i].symbol === symbol) {
-          return this.defaultPrices[i].price * this.caseMultiplier;
+      } else {
+        for (let i = 0; i < this.defaultPrices.length; i++) {
+          if (this.defaultPrices[i].symbol === symbol) {
+            return this.defaultPrices[i].price * this.caseMultiplier;
+          }
         }
       }
     }
@@ -237,7 +267,6 @@ export class StocksComponent {
         if (this.stocksSold[i].symbol === symbol) {
           for (let j = 0; j < this.stocksSold[i].shares.length; j++) {
             total += this.stocksSold[i].shares[j].quantity;
-
           }
         }
       }

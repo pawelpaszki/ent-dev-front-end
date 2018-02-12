@@ -14,6 +14,7 @@ export class AuthComponent implements OnInit {
   email: FormControl;
   password: FormControl;
   private authAttempted: boolean;
+  invalidCredentials: boolean = false;
   public authAction = 'login';
 
   constructor (public authService: AuthService, private router: Router) {
@@ -32,16 +33,16 @@ export class AuthComponent implements OnInit {
     this.authAttempted = true;
     if (this.authAction === "login") {
       if (this.email.valid && this.password.valid) {
-        console.log("login", formValues);
-        this.authService.loginUser(formValues.email, formValues.password).subscribe((resp) => {
-          console.log(resp);
+        this.authService.loginUser(formValues.email, formValues.password).subscribe(resp => {
           this.router.navigate(["stocks"]);
-        });
+        },
+          error => {
+          this.invalidCredentials = true;
+          });
       }
     } else {
       console.log("signup", formValues);
       if (this.authForm.valid) {
-        console.log("signup", formValues);
         this.authService.signUpUser(formValues.email, formValues.password).subscribe((resp) => {
           if (!resp) {
             console.log("not signed up");

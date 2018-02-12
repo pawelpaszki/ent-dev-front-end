@@ -15,6 +15,7 @@ import {appRoutes} from './routes';
 import {OnAuthRouteActivator} from './shared/onAuthRouteActivator';
 import {StocksService} from './services/stocks.service';
 import {HttpClientModule} from '@angular/common/http';
+import {BuyTabletopComponent} from './stocks/buy.tabletop.component';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyC6HpPLVT7kQrAAc1MwEJhG3RR5UHK4Ns4',
@@ -30,7 +31,8 @@ const firebaseConfig = {
     AppComponent,
     AuthComponent,
     StocksComponent,
-    TabletopComponent
+    TabletopComponent,
+    BuyTabletopComponent
   ],
   imports: [
     BrowserModule,

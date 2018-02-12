@@ -14,7 +14,6 @@ const httpOptions = {
 @Injectable()
 export class AuthService {
   public currentUser: IUser;
-  public invalidCredentialsProvided: boolean = false;
 
   constructor(private router: Router, private http: HttpClient) {
 
@@ -23,10 +22,11 @@ export class AuthService {
   loginUser(email: string, password: string): Observable<any> {
     // this.loginAttempted = true;
     const loginInfo = { email, password };
-    return this.http.post<any>('https://pawelpaszki-ent-dev.herokuapp.com/api/authenticate', loginInfo, httpOptions).pipe(
-      tap((user: any) => this.currentUser = user.user,
-        catchError(this.handleError<IUser>('login user'))),
-    );
+      return this.http.post<any>('https://pawelpaszki-ent-dev.herokuapp.com/api/authenticate', loginInfo, httpOptions).pipe(
+        tap((user: any) => this.currentUser = user.user,
+          catchError(this.handleError<IUser>('login user'))),
+      );
+
   }
 
   signUpUser(email: string, password: string): Observable<IUser> {
@@ -40,8 +40,6 @@ export class AuthService {
 
   private handleError<T> (operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
-
-      // Let the app keep running by returning an empty result.
       return of(result as T);
     };
   }
