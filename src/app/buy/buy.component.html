@@ -1,0 +1,37 @@
+<div class="row" style="margin: 1em;">
+  <div class="col-md-4">
+    <input type="text" placeholder="Search for stocks" #stockName (keyup)="filterStock(stockName.value)" style="width: 96%; margin-top: 0.15em;">
+  </div>
+  <div class="col-md-8"></div>
+</div>
+<app-buy-tabletop></app-buy-tabletop>
+<div class="row" style="margin-left: 1em;">
+  <div *ngFor="let stockToBuy of livePricesFormatted; let i = index"  [attr.data-index]="i" style="margin-top:1em; font-size:0.9em;">
+    <div class="row" *ngIf="(i >= pageItems[0] - 1 && i < pageItems[1] && searchedStock === '') || (searchedStock !== '' &&
+    (stockToBuy.displayName.toLowerCase().indexOf(searchedStock.toLowerCase()) !== -1 || stockToBuy.symbol.toLowerCase().indexOf(searchedStock.toLowerCase()) !== -1))">
+      <div class="col-md-4">
+        <div class="col-md-5">{{stockToBuy.displayName}}</div>
+        <div class="col-md-3" style="text-align: center;">{{stockToBuy.exchange}}</div>
+        <div class="col-md-2" style="text-align: center;">{{stockToBuy.symbol}}</div>
+        <div class="col-md-2" style="text-align: right;">{{hasDefaultPrice(stockToBuy.symbol) ? (getDefaultPrice(stockToBuy.symbol) | number:'1.2-2') : (stockToBuy.price | number:'1.2-2')}}</div>
+      </div>
+      <div class="col-md-4">
+        <div class="col-md-3">
+          <input type="number" min="0" max="99999999"  title="{{stockToBuy.symbol}}" id="{{stockToBuy.symbol}}" style="display:block; width: 100%; margin-top: 0.01em" name="{{stockToBuy.symbol}}" #{{stockToBuy.symbol}} (keyup)="setQuantityToBuy(stockToBuy.symbol)">
+        </div>
+        <div class="col-md-3" *ngIf="stockToBuy.quantity > 0" style="text-align: right;">{{hasDefaultPrice(stockToBuy.symbol) ? (getDefaultPrice(stockToBuy.symbol) * stockToBuy.quantity | number:'1.2-2')  : (stockToBuy.price * stockToBuy.quantity | number:'1.2-2')}}</div>
+        <div class="col-md-3" *ngIf="stockToBuy.quantity === 0"></div>
+        <div class="col-md-6">
+          <button (click)="buyShares(stockToBuy.symbol)" class="btn btn-success btn-block btn-xs">buy</button>
+        </div>
+      </div>
+      <div class="col-md-4" style="text-align: center;">
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row" style="display: flex; justify-content: center; margin: 1em;" *ngIf="searchedStock === ''">
+  <div class="btn-group" *ngFor="let pagination of paginationElements" >
+    <button type="button" (click)="setPageItems(pagination.startIndex, pagination.endIndex)" [ngClass]="pagination.startIndex === pageItems[0] ? 'btn btn-primary btn-sm' : 'btn btn-default btn-sm'" style="margin-right: 0.5em;">{{pagination.startIndex}}-{{pagination.endIndex}}</button>
+  </div>
+</div>

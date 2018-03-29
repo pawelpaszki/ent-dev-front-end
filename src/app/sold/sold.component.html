@@ -1,0 +1,46 @@
+<app-tabletop></app-tabletop>
+<div *ngIf="authService.currentUser">
+  <div *ngFor="let stock of authService.currentUser.stocksSold">
+    <div class="row" style="margin-top:1em; font-size:0.9em;" *ngFor="let share of stock.shares">
+      <div class="col-md-4">
+        <div class="col-md-4">{{stock.displayName}}</div>
+        <div class="col-md-2" style="word-wrap: break-word;">{{stock.exchange}}</div>
+        <div class="col-md-2">{{stock.symbol}}</div>
+        <div class="col-md-2">{{share.dateIn | date:'dd/MM/yyyy'}}</div>
+        <div class="col-md-2">{{share.dateOut | date:'dd/MM/yyyy'}}</div>
+      </div>
+      <div class="col-md-4" style="text-align:right">
+        <div class="col-md-2">{{share.quantity}}</div>
+        <div class="col-md-3"></div>
+        <div class="col-md-3">{{getCost(share.quantity, share.purchasePrice) * currencyMultiplier | number:'1.2-2'}}</div>
+        <div class="col-md-2">{{share.purchasePrice * currencyMultiplier | number:'1.2-2'}}</div>
+        <div class="col-md-2">{{share.sellingPrice * currencyMultiplier | number:'1.2-2'}}</div>
+      </div>
+      <div class="col-md-4" style="text-align:right">
+        <div class="col-md-2" style="text-align:right">{{getSellingValue(share.sellingPrice, share.quantity) * currencyMultiplier | number:'1.2-2'}}</div>
+        <div class="col-md-3" [ngClass]="getSoldDetailGainLoss(share.purchasePrice, share.quantity, share.sellingPrice, share.sellingCosts) * currencyMultiplier < 0 ? 'red' : 'green'">
+          {{getSoldDetailGainLoss(share.purchasePrice, share.quantity, share.sellingPrice, share.sellingCosts) * currencyMultiplier | number:'1.2-2'}}
+        </div>
+        <div class="col-md-3"></div>
+        <div class="col-md-2" [ngClass]="getSoldGainLossPercentage(share.sellingPrice, share.quantity, share.purchasePrice, share.sellingCosts) < 0 ? 'red' : 'green'">
+          {{getSoldGainLossPercentage(share.sellingPrice, share.quantity, share.purchasePrice, share.sellingCosts) | percent: '1.0-0'}}
+        </div>
+        <div class="col-md-2">{{share.sellingCosts}}</div>
+      </div>
+    </div>
+    <div class="row" style="font-size:0.9em;">
+      <div class="col-md-4">
+      </div>
+      <div class="col-md-4" style="text-align: center;">
+        <div class="col-md-2"></div>
+        <div class="col-md-3">{{getTotalSoldQuantity(stock.symbol)}}</div>
+        <div class="col-md-7"></div>
+      </div>
+      <div class="col-md-4" style="text-align: center;">
+        <div class="col-md-5"></div>
+        <div class="col-md-3" [ngClass]="getTotalSoldGainLoss(stock.symbol) * currencyMultiplier < 0 ? 'red' : 'green'">{{getTotalSoldGainLoss(stock.symbol) * currencyMultiplier | number:'1.2-2'}}</div>
+        <div class="col-md-4"></div>
+      </div>
+    </div>
+  </div>
+</div>

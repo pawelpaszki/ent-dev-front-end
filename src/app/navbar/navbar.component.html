@@ -1,0 +1,16 @@
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a *ngIf="authService.currentUser" class="navbar-brand" style="pointer-events: none;">Welcome {{authService.currentUser.email}}</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li><a *ngIf="token !== ''" [routerLink]="['/stocks']" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}"> Stocks </a></li>
+      <li><a *ngIf="token !== ''" [routerLink]="['/sold']" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}"> Sold </a></li>
+      <li><a *ngIf="token !== ''" [routerLink]="['/buy']" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}"> Buy </a></li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+      <li><a *ngIf="!token || token === ''" [routerLink]="['/login']"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+      <li><a *ngIf="token !== ''" (click)="authService.logout()"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+    </ul>
+  </div>
+</nav>

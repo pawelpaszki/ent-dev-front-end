@@ -1,13 +1,3 @@
-<nav class="navbar navbar-inverse">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="#">Welcome {{email}}</a>
-    </div>
-    <ul class="nav navbar-nav navbar-right">
-      <li><a (click)="authService.logout()"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
-    </ul>
-  </div>
-</nav>
 <button *ngIf="fabVisible"  id="fab" class="btn btn-primary" style="position: fixed;
   bottom: 5%; right: 5%; z-index: 100" (click)="topFunction()">
   <span class="glyphicon glyphicon-triangle-top"></span>
@@ -15,9 +5,6 @@
 
 <div class="row">
   <div class="col-md-2">
-    <h4 (click)="toggleHoldins()" style="margin-left: 1em;">
-      Shares Held <span [ngClass]="holdingsVisible ? 'glyphicon glyphicon-minus' : 'glyphicon glyphicon-plus'"></span>
-    </h4>
   </div>
   <div class="col-md-2"></div>
   <div class="col-md-4" style="border:0.1em solid black; font-size:1.5em;">
@@ -65,7 +52,7 @@
     </div>
   </div>
 </div>
-<div *ngIf="holdingsVisible">
+<div *ngIf="authService.currentUser">
   <app-tabletop></app-tabletop>
   <div class="row" *ngIf="cash > 0" style="font-size:0.9em;">
     <div class="col-md-4">
@@ -90,10 +77,11 @@
       <div class="col-md-2"></div>
     </div>
   </div>
-  <div *ngFor="let stock of stocksHeld">
+  <div *ngFor="let stock of authService.currentUser.holdings">
     <div class="row" style="margin-top:1em; font-size:0.9em;" *ngFor="let share of stock.shares">
       <div class="col-md-4">
-        <div class="col-md-4">{{stock.displayName}}</div>
+        <div class="col-md-1"><span class="glyphicon glyphicon-remove" (click)="removeShare(stock.symbol, share._id)"></span></div>
+        <div class="col-md-3">{{stock.displayName}}</div>
         <div class="col-md-2" style="word-wrap: break-word; margin-right: 0.5em;">{{stock.exchange}}</div>
         <div class="col-md-2">{{stock.symbol}}</div>
         <div class="col-md-2">{{share.dateIn | date:'dd/MM/yyyy'}}</div>
@@ -118,7 +106,7 @@
         <div class="col-md-2">{{getSellingCosts(stock.symbol, share.quantity) * currencyMultiplier | number:'1.2-2'}}</div>
       </div>
     </div>
-    <div class="row" style="font-size:0.9em;">
+    <div class="row" style="font-size:0.9em;" *ngIf="getTotalQuantity(stock.symbol) > 0">
       <div class="col-md-4">
       </div>
       <div class="col-md-4" style="text-align: center;">
@@ -170,189 +158,19 @@
   </div>
   <hr style="border: 0.1em solid black">
 </div>
+<div class="row" *ngIf="authService.currentUser && authService.currentUser.holdings.length > 0" style="margin-right: 1em; margin-bottom: 5em;">
+  <div class="col-md-8">
 
-<div class="row" *ngIf="stocksHeld && stocksHeld.length > 0 && holdingsVisible" style="margin-right: 1em;">
-  <form [formGroup]="sellForm" (ngSubmit)="sellShares(sellForm.value)" autocomplete="off">
-    <div class="col-md-9">
-      <div class="btn-group" *ngFor="let stock of stocksHeld" style="float:right;">
-        <button *ngIf="stock.symbol !== stockForSaleSymbol" (click)="setStockForSale(stock.symbol)" type="button" class="btn btn-primary" style="margin-right: 0.5em;">{{stock.symbol}}</button>
-      </div>
-    </div>
-    <div class="col-md-1">
-      <input [(ngModel)]="stockForSaleSymbol" [ngModelOptions]="{standalone: true}" readonly="readonly" id="symbol" style="display:block; width: 90%; margin-top: 0.2em">
-    </div>
-    <div class="col-md-1">
-        <input [ngClass]="invalidQuantity() ? 'background: red' : 'background: white'"
-          placeholder="qty" id="sellingQuantity" formControlName="quantity" class="form-control" type="number" >
-    </div>
-    <div class="col-md-1">
-      <button class="btn btn-success btn-block" type="submit">Sell</button>
-    </div>
-  </form>
-</div>
-<div *ngIf="holdingsVisible && stocksHeld && stocksHeld.length > 0">
-  <hr style="border: 0.1em solid black">
-  <div class="row">
-    <div class="col-md-2" style="margin-left: 1em;">
-      <h4 (click)="toggleForecast()">
-        Selling Forecasts<span [ngClass]="forecastVisible ? 'glyphicon glyphicon-minus' : 'glyphicon glyphicon-plus'"></span>
-      </h4>
-    </div>
   </div>
-  <div class="row" style="margin-left: 1em; margin-top: 1em;" *ngIf="forecastVisible">
-    <div class="row">
-      <div class="col-md-4">
-        <h5 style="display: inline; margin-left: 2em;">Enter desired income (same shares sale) </h5>
-      </div>
-      <div class="col-md-2">
-        <input placeholder="Enter desired income" type="number" id="desiredIncome">
-      </div>
-      <div class="col-md-6">
-        <button class="btn btn-success btn-sm" (click)="showDesiredIncome()">show results</button>
-      </div>
-    </div>
-    <div class="row" *ngIf="desiredIncomeVisible">
-      <div class="col-md-1">
-        <span class="glyphicon glyphicon-remove" (click)="hideDesiredIncome()"></span>
-      </div>
-      <div class="col-md-5">
-        desired income
-      </div>
-    </div>
+  <div class="col-md-2">
+    <input type="text" [ngClass]="symbolValid ? 'background: white' : 'background: red'" placeholder="stock symbol" #stockSymbol
+           (keyup)="setStockSymbol(stockSymbol.value)" style="width: 96%; margin-top: 0.15em;" id="stockSymbol">
   </div>
-  <div class="row" style="margin-left: 1em; margin-top: 1em;" *ngIf="forecastVisible">
-    <div class="row">
-      <div class="col-md-4">
-        <h5 style="display: inline; margin-left: 2em;">Enter number of shares to see max profit </h5>
-      </div>
-      <div class="col-md-2">
-        <input placeholder="Enter share's quantity" type="number" id="maxProfit">
-      </div>
-      <div class="col-md-6">
-        <button class="btn btn-success btn-sm" (click)="showMaxProfit()">show results</button>
-      </div>
-    </div>
-    <div class="row" *ngIf="maxProfitVisible">
-      <div class="col-md-1">
-        <span class="glyphicon glyphicon-remove" (click)="hideMaxProfit()"></span>
-      </div>
-      <div class="col-md-5">
-        max profit
-      </div>
-    </div>
+  <div class="col-md-1">
+    <input type="number" [ngClass]="quantityValid ? 'background: white' : 'background: red'" placeholder="quantity" #shareQuantity
+           (keyup)="setSellingQuantity(shareQuantity.value)" style="width: 96%; margin-top: 0.15em;" [disabled]="!symbolValid || stockForSaleSymbol === ''" id="shareQuantity">
   </div>
-  <div class="row" style="margin-left: 1em; margin-top: 1em;" *ngIf="forecastVisible">
-    <div class="row">
-      <div class="col-md-4">
-        <h5 style="display: inline; margin-left: 2em;">Show which shares to sell with profit under &euro;1270 </h5>
-      </div>
-      <div class="col-md-2">
-      </div>
-      <div class="col-md-6">
-        <button class="btn btn-success btn-sm" (click)="showNonTaxable()">show results</button>
-      </div>
-    </div>
-    <div class="row" *ngIf="nonTaxableVisible">
-      <div class="col-md-1">
-        <span class="glyphicon glyphicon-remove" (click)="hideNonTaxable()"></span>
-      </div>
-      <div class="col-md-5">
-        non taxable
-      </div>
-    </div>
-  </div>
-  <hr style="border: 0.1em solid black">
-</div>
-
-<div class="row">
-  <div class="col-md-2" style="margin-left: 1em;">
-    <h4 (click)="toggleSold()">
-      Shares Sold <span [ngClass]="soldVisible ? 'glyphicon glyphicon-minus' : 'glyphicon glyphicon-plus'"></span>
-    </h4>
-  </div>
-</div>
-<div *ngIf="soldVisible">
-  <app-tabletop></app-tabletop>
-  <div *ngFor="let stock of stocksSold">
-    <div class="row" style="margin-top:1em; font-size:0.9em;" *ngFor="let share of stock.shares">
-      <div class="col-md-4">
-        <div class="col-md-4">{{stock.displayName}}</div>
-        <div class="col-md-2" style="word-wrap: break-word;">{{stock.exchange}}</div>
-        <div class="col-md-2">{{stock.symbol}}</div>
-        <div class="col-md-2">{{share.dateIn | date:'dd/MM/yyyy'}}</div>
-        <div class="col-md-2">{{share.dateOut | date:'dd/MM/yyyy'}}</div>
-      </div>
-      <div class="col-md-4" style="text-align:right">
-        <div class="col-md-2">{{share.quantity}}</div>
-        <div class="col-md-3"></div>
-        <div class="col-md-3">{{getCost(share.quantity, share.purchasePrice) * currencyMultiplier | number:'1.2-2'}}</div>
-        <div class="col-md-2">{{share.purchasePrice * currencyMultiplier | number:'1.2-2'}}</div>
-        <div class="col-md-2">{{share.sellingPrice * currencyMultiplier | number:'1.2-2'}}</div>
-      </div>
-      <div class="col-md-4" style="text-align:right">
-        <div class="col-md-2" style="text-align:right">{{getSellingValue(share.sellingPrice, share.quantity) * currencyMultiplier | number:'1.2-2'}}</div>
-        <div class="col-md-3" [ngClass]="getSoldDetailGainLoss(share.purchasePrice, share.quantity, share.sellingPrice, share.sellingCosts) * currencyMultiplier < 0 ? 'red' : 'green'">
-          {{getSoldDetailGainLoss(share.purchasePrice, share.quantity, share.sellingPrice, share.sellingCosts) * currencyMultiplier | number:'1.2-2'}}
-        </div>
-        <div class="col-md-3"></div>
-        <div class="col-md-2" [ngClass]="getSoldGainLossPercentage(share.sellingPrice, share.quantity, share.purchasePrice, share.sellingCosts) < 0 ? 'red' : 'green'">
-          {{getSoldGainLossPercentage(share.sellingPrice, share.quantity, share.purchasePrice, share.sellingCosts) | percent: '1.0-0'}}
-        </div>
-        <div class="col-md-2">{{share.sellingCosts}}</div>
-      </div>
-    </div>
-    <div class="row" style="font-size:0.9em;">
-      <div class="col-md-4">
-      </div>
-      <div class="col-md-4" style="text-align: center;">
-        <div class="col-md-2"></div>
-        <div class="col-md-3">{{getTotalSoldQuantity(stock.symbol)}}</div>
-        <div class="col-md-7"></div>
-      </div>
-      <div class="col-md-4" style="text-align: center;">
-        <div class="col-md-5"></div>
-        <div class="col-md-3" [ngClass]="getTotalSoldGainLoss(stock.symbol) * currencyMultiplier < 0 ? 'red' : 'green'">{{getTotalSoldGainLoss(stock.symbol) * currencyMultiplier | number:'1.2-2'}}</div>
-        <div class="col-md-4"></div>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="row">
-  <div class="col-md-2" style="margin-left: 1em;">
-    <h4 (click)="toggleToBuy()">
-      Shares to Buy <span [ngClass]="toBuyVisible ? 'glyphicon glyphicon-minus' : 'glyphicon glyphicon-plus'"></span>
-    </h4>
-  </div>
-</div>
-<div *ngIf="toBuyVisible">
-  <app-buy-tabletop></app-buy-tabletop>
-  <div class="row" style="margin-left: 1em;">
-    <div class="btn-group" *ngFor="let pagination of paginationElements" >
-      <button type="button" (click)="setPageItems(pagination.startIndex, pagination.endIndex)" [ngClass]="pagination.startIndex === pageItems[0] ? 'btn btn-success' : 'btn btn-primary'" style="margin-right: 0.5em;">{{pagination.startIndex}}-{{pagination.endIndex}}</button>
-    </div>
-  </div>
-  <div class="row" style="margin-left: 1em;">
-    <div *ngFor="let stockToBuy of livePricesFormatted; let i = index"  [attr.data-index]="i" style="margin-top:1em; font-size:0.9em;">
-      <div class="row" *ngIf="i >= pageItems[0] - 1 && i < pageItems[1]">
-        <div class="col-md-4">
-          <div class="col-md-5">{{stockToBuy.displayName}}</div>
-          <div class="col-md-3" style="text-align: center;">{{stockToBuy.exchange}}</div>
-          <div class="col-md-2" style="text-align: center;">{{stockToBuy.symbol}}</div>
-          <div class="col-md-2" style="text-align: right;">{{hasDefaultPrice(stockToBuy.symbol) ? (getDefaultPrice(stockToBuy.symbol) | number:'1.2-2') : (stockToBuy.price | number:'1.2-2')}}</div>
-        </div>
-        <div class="col-md-4">
-          <div class="col-md-3">
-            <input type="number" min="0" max="99999999"  title="{{stockToBuy.symbol}}" id="{{stockToBuy.symbol}}" style="display:block; width: 100%; margin-top: 0.01em" name="{{stockToBuy.symbol}}" #{{stockToBuy.symbol}} (keyup)="setQuantityToBuy(stockToBuy.symbol)">
-          </div>
-          <div class="col-md-3" *ngIf="stockToBuy.quantity > 0" style="text-align: right;">{{hasDefaultPrice(stockToBuy.symbol) ? (getDefaultPrice(stockToBuy.symbol) * stockToBuy.quantity | number:'1.2-2')  : (stockToBuy.price * stockToBuy.quantity | number:'1.2-2')}}</div>
-          <div class="col-md-3" *ngIf="stockToBuy.quantity === 0"></div>
-          <div class="col-md-6">
-            <button (click)="buyShares(stockToBuy.symbol)" class="btn btn-success btn-block btn-xs">buy</button>
-          </div>
-        </div>
-        <div class="col-md-4" style="text-align: center;">
-        </div>
-      </div>
-    </div>
+  <div class="col-md-1">
+    <button class="btn btn-success btn-block" (click)="sellShares()" [disabled]="!symbolValid || !quantityValid || !quantityForSale ">Sell</button>
   </div>
 </div>

@@ -26,7 +26,15 @@ export class AuthService {
         tap((user: any) => this.currentUser = user.user,
           catchError(this.handleError<IUser>('login user'))),
       );
+  }
 
+  getUser(id: string) {
+    const token: string = localStorage.getItem('authtoken');
+    const headers = new HttpHeaders({ 'x-access-token': token});
+    return this.http.get<any[]>('https://pawelpaszki-ent-dev.herokuapp.com/api/users/' + id, {headers}).pipe(
+      tap((user: any) => this.currentUser = user.user,
+        catchError(this.handleError<IUser>('get user')))
+    );
   }
 
   signUpUser(email: string, password: string): Observable<IUser> {
@@ -46,6 +54,8 @@ export class AuthService {
 
   logout() {
     this.currentUser = null;
+    localStorage.setItem('authtoken', '');
+    localStorage.setItem('id', '');
     this.router.navigate(['login'])
   }
 }

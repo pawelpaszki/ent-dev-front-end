@@ -34,6 +34,11 @@ export class AuthComponent implements OnInit {
     if (this.authAction === "login") {
       if (this.email.valid && this.password.valid) {
         this.authService.loginUser(formValues.email, formValues.password).subscribe(resp => {
+          console.log(resp);
+          localStorage.setItem('id', resp.user._id);
+          localStorage.setItem('authtoken', resp.token);
+          console.log(localStorage.getItem('id'));
+          console.log(localStorage.getItem('authtoken'));
           this.router.navigate(["stocks"]);
         },
           error => {
@@ -51,7 +56,10 @@ export class AuthComponent implements OnInit {
               if (!resp) {
                 console.log("unauthenticated");
               } else {
-                console.log(this.authService.currentUser);
+                localStorage.setItem('id', resp.user._id);
+                localStorage.setItem('authtoken', resp.token);
+                console.log(localStorage.getItem('id'));
+                console.log(localStorage.getItem('authtoken'));
                 this.router.navigate(["stocks"]);
               }
             });
