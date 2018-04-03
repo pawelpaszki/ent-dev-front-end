@@ -2,6 +2,19 @@
   bottom: 5%; right: 5%; z-index: 100" (click)="topFunction()">
   <span class="glyphicon glyphicon-triangle-top"></span>
 </button>
+<div *ngIf="showCookieWarning" style="z-index: 10; background: #D3D3D3D3; position: absolute;
+  width: 100%; height: 100%;">
+  <div style="position: absolute;
+  left: 50%;
+  top: 40%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); text-align: center;">
+    <h4>Info</h4>
+    This website stores the information about its users to improve the experience of the service provided. No information is shared with other parties
+    <br>
+    <button class="btn btn-default btn-sm" (click)="closeWarning()">OK</button>
+  </div>
+</div>
 
 <div class="row">
   <div class="col-md-2">

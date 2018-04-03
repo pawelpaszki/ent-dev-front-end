@@ -1,16 +1,8 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {AuthService} from '../services/auth.service';
 import {Router} from '@angular/router';
-import {DatePipe} from '@angular/common';
-import {DecimalPipe} from '@angular/common';
 import {IDefaultPriceModel} from './default.price.model';
-//import {PriceScraperService} from '../common/pricescraper.service';
-import {TabletopComponent} from './tabletop.component';
 import {StocksService} from '../services/stocks.service';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {IShareModel} from './share.model';
-import {IStockModel} from './stock.model';
-import {IPaginationModel} from './pagination.model';
 import {ToastrService} from 'ngx-toastr';
 
 @Component({
@@ -34,19 +26,37 @@ export class StocksComponent implements OnInit, OnDestroy {
   symbolValid: boolean = true;
   quantityValid: boolean = true;
   quantityForSale: number = 0;
+  showCookieWarning: boolean = false;
 
-  constructor(public authService: AuthService, private router: Router, public stocksService: StocksService, private toastr: ToastrService) {
-    if(this.authService.currentUser && this.authService.currentUser !== null && this.authService.currentUser.holdings && this.authService.currentUser.holdings !== null) {
+  constructor(public authService: AuthService, private router: Router, public stocksService: StocksService,
+              private toastr: ToastrService) {
+    if(this.authService.currentUser && this.authService.currentUser !== null
+      && this.authService.currentUser.holdings && this.authService.currentUser.holdings !== null) {
       this.email = this.authService.currentUser.email;
+      this.openWarning();
     } else {
       const id: string = localStorage.getItem('id');
       const token: string = localStorage.getItem('authtoken');
       if(id && token && id.length > 0 && token.length > 0) {
-        this.authService.getUser(id).subscribe(() =>{});
+        this.authService.getUser(id).subscribe(() =>{
+          this.openWarning();
+        });
       }
     }
     this.getPricesFromServer();
     this.getDefaultPrices();
+  }
+
+  openWarning() {
+    const cookieWarningShown: string = localStorage.getItem(this.authService.currentUser._id + 'cookieWarning');
+    if(cookieWarningShown !== 'shown') {
+      this.showCookieWarning = true;
+    }
+  }
+
+  closeWarning() {
+    this.showCookieWarning = false;
+    localStorage.setItem(this.authService.currentUser._id + 'cookieWarning', 'shown');
   }
 
   getDefaultPrices() {
@@ -127,7 +137,9 @@ export class StocksComponent implements OnInit, OnDestroy {
   }
 
   sellShares() {
-    this.stocksService.sellStock(this.quantityForSale, this.getSellingCosts(this.stockForSaleSymbol, this.quantityForSale), this.stockForSaleSymbol, this.getDefaultPrice(this.stockForSaleSymbol),this.getTotalQuantity(this.stockForSaleSymbol)).subscribe((resp) => {
+    this.stocksService.sellStock(this.quantityForSale, this.getSellingCosts(
+      this.stockForSaleSymbol, this.quantityForSale), this.stockForSaleSymbol,
+      this.getDefaultPrice(this.stockForSaleSymbol),this.getTotalQuantity(this.stockForSaleSymbol)).subscribe((resp) => {
       this.toastr.success('Shares sold: ' + this.quantityForSale + ' of ' + this.stockForSaleSymbol, 'Success');
       (<HTMLInputElement>document.getElementById('stockSymbol')).value = '';
       (<HTMLInputElement>document.getElementById('shareQuantity')).value = '';
@@ -170,13 +182,19 @@ export class StocksComponent implements OnInit, OnDestroy {
   getFormattedPrices() {
     this.livePricesFormatted = [];
     for (let j = 0; j < this.livePricesRaw.ise.data.length; j++) {
-      this.livePricesFormatted.push(new IDefaultPriceModel(this.livePricesRaw.ise.data[j].symbol, this.livePricesRaw.ise.data[j].price.toString().replace(',',''), this.livePricesRaw.ise.exchange, this.livePricesRaw.ise.data[j].company));
+      this.livePricesFormatted.push(new IDefaultPriceModel(this.livePricesRaw.ise.data[j].symbol,
+        this.livePricesRaw.ise.data[j].price.toString().replace(',',''),
+        this.livePricesRaw.ise.exchange, this.livePricesRaw.ise.data[j].company));
     }
     for (let j = 0; j < this.livePricesRaw.ftse350.data.length; j++) {
-      this.livePricesFormatted.push(new IDefaultPriceModel(this.livePricesRaw.ftse350.data[j].symbol, this.livePricesRaw.ftse350.data[j].price.toString().replace(',',''), this.livePricesRaw.ftse350.exchange, this.livePricesRaw.ftse350.data[j].company));
+      this.livePricesFormatted.push(new IDefaultPriceModel(this.livePricesRaw.ftse350.data[j].symbol,
+        this.livePricesRaw.ftse350.data[j].price.toString().replace(',',''),
+        this.livePricesRaw.ftse350.exchange, this.livePricesRaw.ftse350.data[j].company));
     }
     for (let j = 0; j < this.livePricesRaw.coinranking.data.length; j++) {
-      this.livePricesFormatted.push(new IDefaultPriceModel(this.livePricesRaw.coinranking.data[j].symbol, this.livePricesRaw.coinranking.data[j].price.toString().replace(',',''), this.livePricesRaw.coinranking.exchange, this.livePricesRaw.coinranking.data[j].company));
+      this.livePricesFormatted.push(new IDefaultPriceModel(this.livePricesRaw.coinranking.data[j].symbol,
+        this.livePricesRaw.coinranking.data[j].price.toString().replace(',',''),
+        this.livePricesRaw.coinranking.exchange, this.livePricesRaw.coinranking.data[j].company));
     }
   }
 
@@ -213,7 +231,8 @@ export class StocksComponent implements OnInit, OnDestroy {
     if (this.authService.currentUser && this.authService.currentUser.holdings) {
       for (let i = 0; i < this.authService.currentUser.holdings.length; i++) {
         for (let j = 0; j < this.authService.currentUser.holdings[i].shares.length; j++) {
-          total += this.getDetailGainLoss(this.authService.currentUser.holdings[i].symbol, this.authService.currentUser.holdings[i].shares[j].quantity,
+          total += this.getDetailGainLoss(this.authService.currentUser.holdings[i].symbol,
+            this.authService.currentUser.holdings[i].shares[j].quantity,
             this.authService.currentUser.holdings[i].shares[j].purchasePrice);
         }
       }
@@ -227,7 +246,8 @@ export class StocksComponent implements OnInit, OnDestroy {
       for (let i = 0; i < this.authService.currentUser.holdings.length; i++) {
         if (this.authService.currentUser.holdings[i].symbol === symbol) {
           for (let j = 0; j < this.authService.currentUser.holdings[i].shares.length; j++) {
-            total += this.getDetailGainLoss(symbol, this.authService.currentUser.holdings[i].shares[j].quantity, this.authService.currentUser.holdings[i].shares[j].purchasePrice);
+            total += this.getDetailGainLoss(symbol, this.authService.currentUser.holdings[i].shares[j].quantity,
+              this.authService.currentUser.holdings[i].shares[j].purchasePrice);
           }
         }
       }
@@ -241,7 +261,8 @@ export class StocksComponent implements OnInit, OnDestroy {
       for (let i = 0; i < this.authService.currentUser.stocksSold.length; i++) {
         if (this.authService.currentUser.stocksSold[i].symbol === symbol) {
           for (let j = 0; j < this.authService.currentUser.stocksSold[i].shares.length; j++) {
-            total += this.getSoldDetailGainLoss(this.authService.currentUser.stocksSold[i].shares[j].purchasePrice, this.authService.currentUser.stocksSold[i].shares[j].quantity,
+            total += this.getSoldDetailGainLoss(this.authService.currentUser.stocksSold[i].shares[j].purchasePrice,
+              this.authService.currentUser.stocksSold[i].shares[j].quantity,
               this.authService.currentUser.stocksSold[i].shares[j].sellingPrice, this.authService.currentUser.stocksSold[i].shares[j].sellingCosts);
           }
         }

@@ -10,5 +10,5 @@ export const appRoutes: Routes = [
   { path: 'sold', component: SoldComponent, canActivate: [OnAuthRouteActivator] },
   { path: 'buy', component: BuyComponent, canActivate: [OnAuthRouteActivator] },
   { path: 'login', component: AuthComponent},
-  { path: '**', redirectTo: 'login' },
+  { path: '**', redirectTo: 'stocks' },
 ];
