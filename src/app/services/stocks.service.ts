@@ -54,8 +54,6 @@ export class StocksService {
     const token: string = localStorage.getItem('authtoken');
     const headers = new HttpHeaders({ 'x-access-token': token});
     const data = { symbol, purchasePrice, displayName, exchange, quantity };
-    console.log(data);
-    console.log(this.authService.currentUser._id);
     return this.http.post<any>('https://pawelpaszki-ent-dev.herokuapp.com/api/users/' + this.authService.currentUser._id + '/buy', data, {headers})
       .pipe(
         tap(user => this.authService.currentUser = user.user,

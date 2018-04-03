@@ -122,7 +122,6 @@ export class StocksComponent implements OnInit, OnDestroy {
         stockIndex = i;
         for(let j = 0; j < this.authService.currentUser.holdings[i].shares.length; j++) {
           if(this.authService.currentUser.holdings[i].shares[j]._id === id) {
-            console.log(this.authService.currentUser.holdings[i].shares[j]);
             shareIndex = j;
             break;
           }
@@ -212,20 +211,6 @@ export class StocksComponent implements OnInit, OnDestroy {
     return total;
   }
 
-  getTotalSoldQuantity(symbol: string) {
-    let total = 0;
-    if (this.authService.currentUser.stocksSold) {
-      for (let i = 0; i < this.authService.currentUser.stocksSold.length; i++) {
-        if (this.authService.currentUser.stocksSold[i].symbol === symbol) {
-          for (let j = 0; j < this.authService.currentUser.stocksSold[i].shares.length; j++) {
-            total += this.authService.currentUser.stocksSold[i].shares[j].quantity;
-          }
-        }
-      }
-    }
-    return total;
-  }
-
   getTotalProfitLoss() {
     let total = 0;
     if (this.authService.currentUser && this.authService.currentUser.holdings) {
@@ -248,22 +233,6 @@ export class StocksComponent implements OnInit, OnDestroy {
           for (let j = 0; j < this.authService.currentUser.holdings[i].shares.length; j++) {
             total += this.getDetailGainLoss(symbol, this.authService.currentUser.holdings[i].shares[j].quantity,
               this.authService.currentUser.holdings[i].shares[j].purchasePrice);
-          }
-        }
-      }
-    }
-    return total;
-  }
-
-  getTotalSoldGainLoss(symbol: string) {
-    let total = 0;
-    if(this.authService.currentUser.stocksSold) {
-      for (let i = 0; i < this.authService.currentUser.stocksSold.length; i++) {
-        if (this.authService.currentUser.stocksSold[i].symbol === symbol) {
-          for (let j = 0; j < this.authService.currentUser.stocksSold[i].shares.length; j++) {
-            total += this.getSoldDetailGainLoss(this.authService.currentUser.stocksSold[i].shares[j].purchasePrice,
-              this.authService.currentUser.stocksSold[i].shares[j].quantity,
-              this.authService.currentUser.stocksSold[i].shares[j].sellingPrice, this.authService.currentUser.stocksSold[i].shares[j].sellingCosts);
           }
         }
       }
@@ -309,35 +278,6 @@ export class StocksComponent implements OnInit, OnDestroy {
 
   getValue(symbol: string, quantity: number) {
     return this.getDefaultPrice(symbol) * quantity;
-  }
-
-  getSellingValue(sellingPrice: number, quantity: number) {
-    return sellingPrice * quantity;
-  }
-
-  getSoldDetailGainLoss(purchasePrice: number, quantity: number, sellingPrice: number, sellingCosts: number) {
-    const value: number = quantity * (sellingPrice - purchasePrice) - sellingCosts;
-    return value;
-  }
-
-  getSoldSellingCosts(sellingPrice: number, quantity: number) {
-    let value = this.getSellingValue(sellingPrice, quantity);
-    if (value <= 25000) {
-      value = value * 0.01;
-    } else {
-      const over25 = value - 25000;
-      value = 250 + over25 * 0.005;
-    }
-    if (value <= 25) {
-      value = 26.25;
-    } else {
-      value = value + 1.25;
-    }
-    return value;
-  }
-
-  getSoldGainLossPercentage(sellingPrice: number, quantity: number, purchasePrice: number, sellingCosts: number) {
-    return this.getSoldDetailGainLoss(purchasePrice, quantity, sellingPrice, sellingCosts) / (purchasePrice * quantity);
   }
 
   getDetailGainLoss(symbol: string, quantity: number, purchasePrice: number) {

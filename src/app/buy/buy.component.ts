@@ -29,7 +29,6 @@ export class BuyComponent {
   }
 
   filterStock(name: string) {
-    console.log(name);
     this.searchedStock = name;
   }
 

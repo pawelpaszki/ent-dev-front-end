@@ -16,6 +16,7 @@ export class AuthComponent implements OnInit {
   private authAttempted: boolean;
   invalidCredentials: boolean = false;
   public authAction = 'login';
+  loading: boolean = false;
 
   constructor (public authService: AuthService, private router: Router) {
   }
@@ -31,14 +32,13 @@ export class AuthComponent implements OnInit {
 
   authenticate(formValues) {
     this.authAttempted = true;
+    this.loading = true;
     if (this.authAction === "login") {
       if (this.email.valid && this.password.valid) {
         this.authService.loginUser(formValues.email, formValues.password).subscribe(resp => {
-          console.log(resp);
+          this.loading = false;
           localStorage.setItem('id', resp.user._id);
           localStorage.setItem('authtoken', resp.token);
-          console.log(localStorage.getItem('id'));
-          console.log(localStorage.getItem('authtoken'));
           this.router.navigate(["stocks"]);
         },
           error => {
@@ -46,7 +46,6 @@ export class AuthComponent implements OnInit {
           });
       }
     } else {
-      console.log("signup", formValues);
       if (this.authForm.valid) {
         this.authService.signUpUser(formValues.email, formValues.password).subscribe((resp) => {
           if (!resp) {
@@ -56,10 +55,9 @@ export class AuthComponent implements OnInit {
               if (!resp) {
                 console.log("unauthenticated");
               } else {
+                this.loading = false;
                 localStorage.setItem('id', resp.user._id);
                 localStorage.setItem('authtoken', resp.token);
-                console.log(localStorage.getItem('id'));
-                console.log(localStorage.getItem('authtoken'));
                 this.router.navigate(["stocks"]);
               }
             });
