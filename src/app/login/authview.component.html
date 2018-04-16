@@ -44,13 +44,13 @@
           <br style="display:block; margin-top:2px; line-height:4px;">
           <p class="invCred" *ngIf="invalidCredentials">Invalid credentials provided!</p>
           <div [hidden]="authAction === 'signup'">
-            <button type="submit" class="btn btn-block btn-lg btn-success" [disabled]="loading">
-              <span *ngIf="!loading">Login</span><span class="fa fa-spinner" *ngIf="loading"></span>
+            <button type="submit" class="btn btn-block btn-lg btn-success" [disabled]="loading || invalidInput()">
+              <span *ngIf="!loading">Login</span><span class="fa fa-spinner fa-spin" *ngIf="loading"></span>
             </button>
           </div>
           <div [hidden]="authAction === 'login'">
-            <button type="submit" class="btn btn-block btn-lg btn-success" [disabled]="loading">
-              <span *ngIf="!loading">Sign Up</span><span class="fa fa-spinner" *ngIf="loading"></span>
+            <button type="submit" class="btn btn-block btn-lg btn-success" [disabled]="loading || invalidInput()">
+              <span *ngIf="!loading">Sign Up</span><span class="fa fa-spinner fa-spin" *ngIf="loading"></span>
             </button>
           </div>
         </form>

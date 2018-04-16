@@ -2,7 +2,7 @@
   bottom: 5%; right: 5%; z-index: 100" (click)="topFunction()">
   <span class="glyphicon glyphicon-triangle-top"></span>
 </button>
-<div *ngIf="showCookieWarning" style="z-index: 10; background: #D3D3D3D3; position: absolute;
+<div *ngIf="showCookieWarning" style="z-index: 10; position: absolute;
   width: 100%; height: 100%;">
   <div style="position: absolute;
   left: 50%;
@@ -17,7 +17,7 @@
   </div>
 </div>
 
-<div class="row">
+<div class="row" *ngIf="!showCookieWarning">
   <div class="col-md-2">
   </div>
   <div class="col-md-2"></div>
@@ -66,7 +66,7 @@
     </div>
   </div>
 </div>
-<div *ngIf="authService.currentUser">
+<div *ngIf="authService.currentUser && !showCookieWarning">
   <app-tabletop></app-tabletop>
   <div class="row" *ngIf="cash > 0" style="font-size:0.9em;">
     <div class="col-md-4">
@@ -172,7 +172,7 @@
   </div>
   <hr style="border: 0.1em solid black">
 </div>
-<div class="row" *ngIf="authService.currentUser && authService.currentUser.holdings.length > 0" style="margin-right: 1em; margin-bottom: 5em;">
+<div class="row" *ngIf="authService.currentUser && authService.currentUser.holdings.length > 0 && !showCookieWarning" style="margin-right: 1em; margin-bottom: 5em;">
   <div class="col-md-8">
 
   </div>

@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {Router} from '@angular/router';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-authview',
@@ -18,7 +19,7 @@ export class AuthComponent implements OnInit {
   public authAction = 'login';
   loading: boolean = false;
 
-  constructor (public authService: AuthService, private router: Router) {
+  constructor (public authService: AuthService, private router: Router, private toastr: ToastrService) {
   }
 
   ngOnInit() {
@@ -42,7 +43,9 @@ export class AuthComponent implements OnInit {
           this.router.navigate(["stocks"]);
         },
           error => {
+            this.toastr.error('Invalid credentials provided');
           this.invalidCredentials = true;
+          this.loading = false;
           });
       }
     } else {
@@ -50,10 +53,13 @@ export class AuthComponent implements OnInit {
         this.authService.signUpUser(formValues.email, formValues.password).subscribe((resp) => {
           if (!resp) {
             console.log("not signed up");
+            this.loading = false;
           } else {
             this.authService.loginUser(formValues.email, formValues.password).subscribe((resp) => {
               if (!resp) {
                 console.log("unauthenticated");
+                this.toastr.error('Unable to register with credentials provided');
+		            this.loading = false;
               } else {
                 this.loading = false;
                 localStorage.setItem('id', resp.user._id);
@@ -62,7 +68,12 @@ export class AuthComponent implements OnInit {
               }
             });
           }
-        });
+        },
+          error => {
+            this.toastr.error('Unable to sign up. Email taken');
+            this.invalidCredentials = true;
+            this.loading = false;
+          });
       }
     }
   }
@@ -72,6 +83,10 @@ export class AuthComponent implements OnInit {
   }
   invalidPassword() {
     return (!this.password.valid && !this.password.untouched) || (this.authAttempted == true && this.password.value == "");
+  }
+
+  invalidInput() {
+    return this.email.value == "" || this.password.value == "" || this.invalidPassword() || this.invalidEmail()
   }
 
   setAuthAction(value) {
