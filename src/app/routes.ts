@@ -1,9 +1,9 @@
 import {Routes} from '@angular/router';
-import {StocksComponent} from './stocks/stocks.component';
+import {BuyComponent} from './buy/buy.component';
 import {AuthComponent} from './login/authview.component';
 import {OnAuthRouteActivator} from './shared/onAuthRouteActivator';
 import {SoldComponent} from './sold/sold.component';
-import {BuyComponent} from './buy/buy.component';
+import {StocksComponent} from './stocks/stocks.component';
 
 export const appRoutes: Routes = [
   { path: 'stocks', component: StocksComponent, canActivate: [OnAuthRouteActivator] },

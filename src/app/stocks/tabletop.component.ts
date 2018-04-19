@@ -3,11 +3,11 @@ import {Component, OnInit} from '@angular/core';
 
 @Component({
   selector: 'app-tabletop',
-  templateUrl: './tabletop.component.html'
+  templateUrl: './tabletop.component.html',
 })
 export class TabletopComponent implements OnInit {
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
   }
 
 }

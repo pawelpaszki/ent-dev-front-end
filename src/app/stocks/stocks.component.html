@@ -173,7 +173,7 @@
   <hr style="border: 0.1em solid black">
 </div>
 <div class="row" *ngIf="authService.currentUser && authService.currentUser.holdings.length > 0 && !showCookieWarning" style="margin-right: 1em; margin-bottom: 5em;">
-  <div class="col-md-8">
+  <div class="col-md-6">
 
   </div>
   <div class="col-md-2">
@@ -186,5 +186,8 @@
   </div>
   <div class="col-md-1">
     <button class="btn btn-success btn-block" (click)="sellShares()" [disabled]="!symbolValid || !quantityValid || !quantityForSale ">Sell</button>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-success btn-block" (click)="sellAllShares()">Liquidate All</button>
   </div>
 </div>

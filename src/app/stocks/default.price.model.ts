@@ -1,9 +1,9 @@
 export class IDefaultPriceModel {
-  symbol: string;
-  price: number;
-  exchange: string;
-  displayName: string;
-  quantity: number;
+  public symbol: string;
+  public price: number;
+  public exchange: string;
+  public displayName: string;
+  public quantity: number;
   constructor(symbol: string, price: number, exchange: string, displayName: string) {
     this.symbol = symbol;
     this.price = price;

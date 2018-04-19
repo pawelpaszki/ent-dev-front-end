@@ -1,84 +1,99 @@
-import { Injectable } from '@angular/core';
-import {Observable} from 'rxjs/Observable';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {catchError, tap} from 'rxjs/operators';
+import { Injectable } from '@angular/core';
+import {ToastrService} from 'ngx-toastr';
+import {Observable} from 'rxjs/Observable';
 import {of} from 'rxjs/observable/of';
+import {catchError, tap} from 'rxjs/operators';
 import {AuthService} from './auth.service';
-import {IDefaultPriceModel} from '../stocks/default.price.model';
 
 const httpOptions = {
-  headers: new HttpHeaders({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin':'*' })
+  headers: new HttpHeaders({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }),
 };
 
 @Injectable()
 export class StocksService {
 
-  defaultPrices = [];
-  livePricesRaw: any = [];
-  livePricesFormatted: IDefaultPriceModel[] = [];
+  public defaultPrices = [];
 
-  constructor(private http: HttpClient, private authService: AuthService) {
+  constructor(private http: HttpClient, private authService: AuthService, private toastr: ToastrService) {
     this.getSharePrices();
   }
 
-  getSharePrices (): Observable<any[]> {
+  public getSharePrices(): Observable<any[]> {
     return this.http.get<any[]>('https://scraper601.herokuapp.com/scrape/all', httpOptions)
       .pipe(
         tap((_) =>
-          catchError(this.handleError('get prices', [])))
+          catchError(this.handleError('get prices', []))),
       );
   }
 
-  resetUserStock () {
+  public resetUserStock() {
     const token: string = localStorage.getItem('authtoken');
     const headers = new HttpHeaders({ 'x-access-token': token});
-    return this.http.put<any>('https://pawelpaszki-ent-dev.herokuapp.com/api/users/' + this.authService.currentUser._id + '/reset', {},{headers})
+    return this.http.put<any>('https://pawelpaszki-ent-dev.herokuapp.com/api/users/'
+      + this.authService.currentUser._id + '/reset', {}, {headers})
       .pipe(
-        tap(user => this.authService.currentUser = user.user,
-          catchError(this.handleError('reset user stock', [])))
+        tap((user) => this.authService.currentUser = user.user,
+          catchError(this.handleError('reset user stock', []))),
       );
   }
 
-  sellStock (quantity: number, sellCosts: number, symbol: string, sellingPrice: number, totalQuantity: number) {
+  public sellStock(quantity: number, sellCosts: number, symbol: string, sellingPrice: number, totalQuantity: number) {
     const data = { quantity, sellCosts, symbol, sellingPrice, totalQuantity };
     const token: string = localStorage.getItem('authtoken');
     const headers = new HttpHeaders({ 'x-access-token': token});
-    return this.http.post<any>('https://pawelpaszki-ent-dev.herokuapp.com/api/users/' + this.authService.currentUser._id + '/sell', data, {headers})
+    return this.http.post<any>('https://pawelpaszki-ent-dev.herokuapp.com/api/users/' +
+      this.authService.currentUser._id + '/sell', data, {headers})
       .pipe(
-        tap(user => this.authService.currentUser = user.user,
-          catchError(this.handleError('reset user stock', [])))
+        tap((user) => this.authService.currentUser = user.user,
+          catchError(this.handleError('sell user stock', []))),
       );
   }
 
-  buyStock (symbol: string, purchasePrice: number, displayName: string, exchange: string, quantity: number) {
+  public sellAll(quantities: number[], sellCosts: number[], symbols: string[], sellingPrices: number[]) {
+    const that = this;
+    function sell(i, that) {
+      if (i < quantities.length ) {
+        that.sellStock(quantities[i], sellCosts[i], symbols[i], sellingPrices[i], quantities[i]).subscribe(() => {
+          sell(i + 1, that);
+        });
+      } else {
+        that.toastr.success('all shares sold', 'Success');
+      }
+    }
+    sell(0, that);
+  }
+
+  public buyStock(symbol: string, purchasePrice: number, displayName: string, exchange: string, quantity: number) {
     const token: string = localStorage.getItem('authtoken');
     const headers = new HttpHeaders({ 'x-access-token': token});
     const data = { symbol, purchasePrice, displayName, exchange, quantity };
-    return this.http.post<any>('https://pawelpaszki-ent-dev.herokuapp.com/api/users/' + this.authService.currentUser._id + '/buy', data, {headers})
+    return this.http.post<any>('https://pawelpaszki-ent-dev.herokuapp.com/api/users/' +
+      this.authService.currentUser._id + '/buy', data, {headers})
       .pipe(
-        tap(user => this.authService.currentUser = user.user,
-          catchError(this.handleError('reset user stock', [])))
+        tap((user) => this.authService.currentUser = user.user,
+          catchError(this.handleError('reset user stock', []))),
       );
   }
 
-  getDefaultPrices (): Observable<any[]> {
+  public getDefaultPrices(): Observable<any[]> {
     return this.http.get<any[]>('https://pawelpaszki-ent-dev.herokuapp.com/api/defaults/', httpOptions)
       .pipe(
-        tap(defaults =>
-          catchError(this.handleError('get default prices', [])))
+        tap((defaults) =>
+          catchError(this.handleError('get default prices', []))),
       );
   }
 
-  pushNewDefault(symbol: string, price: number, exchange: string, displayName: string) {
+  public pushNewDefault(symbol: string, price: number, exchange: string, displayName: string) {
     const data = { symbol, price, exchange, displayName };
     return this.http.post<any>('https://pawelpaszki-ent-dev.herokuapp.com/api/defaults/', data, httpOptions)
       .pipe(
-        tap(data =>
-          catchError(this.handleError('push new default', [])))
+        tap((data) =>
+          catchError(this.handleError('push new default', []))),
       );
   }
 
-  private handleError<T> (operation = 'operation', result?: T) {
+  private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
       return of(result as T);
     };

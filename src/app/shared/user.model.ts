@@ -1,7 +1,7 @@
 export class IUser {
-  _id: string;
-  email: string;
-  password: string;
-  holdings?: any[];
-  stocksSold?: any[];
+  public _id: string;
+  public email: string;
+  public password: string;
+  public holdings?: any[];
+  public stocksSold?: any[];
 }

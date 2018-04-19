@@ -1,10 +1,10 @@
 import {IShareModel} from './share.model';
 
 export class IStockModel {
-  symbol: string;
-  exchange: string;
-  display_name: string;
-  shares: IShareModel[];
+  public symbol: string;
+  public exchange: string;
+  public display_name: string;
+  public shares: IShareModel[];
   constructor(symbol: string, exchange: string, display_name: string, shares: IShareModel[]) {
     this.symbol = symbol;
     this.exchange = exchange;

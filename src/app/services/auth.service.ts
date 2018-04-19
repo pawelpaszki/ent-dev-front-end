@@ -1,13 +1,13 @@
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {Router} from '@angular/router';
 import {Observable} from 'rxjs/Observable';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {IUser} from '../shared/user.model';
 import {of} from 'rxjs/observable/of';
 import {catchError, tap} from 'rxjs/operators';
+import {IUser} from '../shared/user.model';
 
 const httpOptions = {
-  headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+  headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
 };
 
 
@@ -19,43 +19,45 @@ export class AuthService {
 
   }
 
-  loginUser(email: string, password: string): Observable<any> {
+  public loginUser(email: string, password: string): Observable<any> {
     // this.loginAttempted = true;
     const loginInfo = { email, password };
-      return this.http.post<any>('https://pawelpaszki-ent-dev.herokuapp.com/api/authenticate', loginInfo, httpOptions).pipe(
+    return this.http.post<any>('https://pawelpaszki-ent-dev.herokuapp.com/api/authenticate',
+      loginInfo, httpOptions).pipe(
         tap((user: any) => this.currentUser = user.user,
           catchError(this.handleError<IUser>('login user'))),
       );
   }
 
-  getUser(id: string) {
+  public getUser(id: string) {
     const token: string = localStorage.getItem('authtoken');
     const headers = new HttpHeaders({ 'x-access-token': token});
     return this.http.get<any[]>('https://pawelpaszki-ent-dev.herokuapp.com/api/users/' + id, {headers}).pipe(
       tap((user: any) => this.currentUser = user.user,
-        catchError(this.handleError<IUser>('get user')))
+        catchError(this.handleError<IUser>('get user'))),
     );
   }
 
-  signUpUser(email: string, password: string): Observable<IUser> {
+  public signUpUser(email: string, password: string): Observable<IUser> {
     // this.signupAttempted = true;
     const loginInfo = { email, password };
     return this.http.post<IUser>('https://pawelpaszki-ent-dev.herokuapp.com/api/signup', loginInfo, httpOptions).pipe(
       tap((user: IUser) =>
-        catchError(this.handleError<IUser>('login user')))
+        catchError(this.handleError<IUser>('login user'))),
     );
   }
 
-  private handleError<T> (operation = 'operation', result?: T) {
+  public logout() {
+    this.currentUser = null;
+    localStorage.setItem('authtoken', '');
+    localStorage.setItem('id', '');
+    this.router.navigate(['login']);
+  }
+
+  private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
       return of(result as T);
     };
   }
 
-  logout() {
-    this.currentUser = null;
-    localStorage.setItem('authtoken', '');
-    localStorage.setItem('id', '');
-    this.router.navigate(['login'])
-  }
 }

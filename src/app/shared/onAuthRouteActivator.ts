@@ -1,6 +1,6 @@
-import {Injectable} from "@angular/core";
-import {ActivatedRouteSnapshot, CanActivate, Router} from "@angular/router";
-import {AuthService} from "../services/auth.service";
+import {Injectable} from '@angular/core';
+import {ActivatedRouteSnapshot, CanActivate, Router} from '@angular/router';
+import {AuthService} from '../services/auth.service';
 
 @Injectable()
 export class OnAuthRouteActivator implements CanActivate {
@@ -8,7 +8,7 @@ export class OnAuthRouteActivator implements CanActivate {
 
   }
 
-  canActivate(route: ActivatedRouteSnapshot){
+  public canActivate(route: ActivatedRouteSnapshot) {
     return this.authService.currentUser !== null;
   }
 }
